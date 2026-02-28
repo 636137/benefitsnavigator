@@ -1,0 +1,8 @@
+{
+  "name": "benefitsnavigator",
+  "version": "1.0.0",
+  "description": "Multi-benefit eligibility screener",
+  "scripts": {
+    "dev": "cd backend && node server.js"
+  }
+}

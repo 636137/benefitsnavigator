@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Benefits Navigator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    input { width: 100%; padding: 8px; margin: 5px 0; }
+    button { background: #005ea2; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-top: 10px; }
+    .results { margin-top: 20px; padding: 20px; background: #f0f0f0; }
+    .eligible { color: green; font-weight: bold; }
+    .not-eligible { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Benefits Eligibility Screener</h1>
+  <form id="screeningForm">
+    <label>Household Size:</label>
+    <input type="number" id="size" min="1" required>
+    
+    <label>Monthly Income ($):</label>
+    <input type="number" id="income" required>
+    
+    <label>Children Under 18:</label>
+    <input type="number" id="children" min="0" value="0">
+    
+    <label>Infants/Pregnant:</label>
+    <input type="number" id="infants" min="0" value="0">
+    
+    <button type="submit">Check Eligibility</button>
+  </form>
+  
+  <div id="results" class="results" style="display:none;"></div>
+  
+  <script>
+    document.getElementById('screeningForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const household = {
+        size: parseInt(document.getElementById('size').value),
+        income: parseInt(document.getElementById('income').value),
+        children: parseInt(document.getElementById('children').value),
+        infants: parseInt(document.getElementById('infants').value)
+      };
+      
+      const res = await fetch('http://localhost:3002/api/eligibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ household })
+      });
+      const results = await res.json();
+      
+      let html = '<h2>Your Eligibility Results</h2>';
+      for (const [program, data] of Object.entries(results)) {
+        const status = data.eligible ? 'eligible' : 'not-eligible';
+        html += `<div class="${status}">`;
+        html += `<h3>${program.toUpperCase()}: ${data.eligible ? 'ELIGIBLE' : 'Not Eligible'}</h3>`;
+        if (data.monthlyBenefit) html += `<p>Estimated Monthly Benefit: $${data.monthlyBenefit}</p>`;
+        html += '</div>';
+      }
+      
+      document.getElementById('results').innerHTML = html;
+      document.getElementById('results').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
